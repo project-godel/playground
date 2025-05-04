@@ -166,8 +166,8 @@ void main() {
                         message: err.error,
                         startLineNumber: err.line,
                         startColumn: err.col,
-                        endLineNumber: err.line,
-                        endColumn: err.col + 1
+                        endLineNumber: err.endline,
+                        endColumn: err.endcol
                     });
                 }
 
