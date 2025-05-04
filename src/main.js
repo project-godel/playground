@@ -4,6 +4,7 @@ window.require.config({ paths: { vs: 'https://unpkg.com/monaco-editor@0.45.0/min
 
 window.require(['vs/editor/editor.main'], () => {
     const editor = monaco.editor.create(document.getElementById('editor'), {
+        language: 'godel',
         value: `int INFINITY = 1000000;
 
 struct Edge {
@@ -71,6 +72,79 @@ void main() {
 }`,
         theme: 'vs-dark',
     });
+
+    monaco.languages.register({ id: 'godel' });
+
+    monaco.languages.setMonarchTokensProvider('godel', {
+        keywords: [
+            'struct', 'if', 'else', 'for', 'while', 'return', 'match',
+            'break', 'continue', 'true', 'false', 'int',
+            'void', 'int', 'bool', 'char', 'float',
+        ],
+
+        operators: [
+            '=', '+=', '-=', '*=', '/=', '%=', '&=', '|=', '^=', '<<=', '>>=',
+            '+', '-', '*', '/', '%', '^', '&', '|', '<<', '>>',
+            '==', '!=', '<', '<=', '>', '>=', '&&', '||',
+            '!', '--', '++', '~', '?', ':',
+        ],
+
+        symbols: /[=><!~?:&|+\-*\/\^%]+/,
+
+        tokenizer: {
+            root: [
+                // identifiers and keywords
+                [/[a-zA-Z_][a-zA-Z0-9_]*/, {
+                    cases: {
+                        '@keywords': 'keyword',
+                        '@default': 'identifier',
+                    }
+                }],
+
+                // whitespace
+                { include: '@whitespace' },
+
+                // numbers
+                [/\d+\.\d+([eE][-+]?\d+)?/, 'number.float'],
+                [/\d+/, 'number'],
+
+                // characters and strings
+                [/'([^'\\]|\\.)'/, 'string'],
+                [/"/, { token: 'string.quote', bracket: '@open', next: '@string' }],
+
+                // operators
+                [/@symbols/, {
+                    cases: {
+                        '@operators': 'operator',
+                        '@default': ''
+                    }
+                }],
+
+                // delimiters and brackets
+                [/[{}()\[\]]/, '@brackets'],
+                [/[,;]/, 'delimiter'],
+            ],
+
+            string: [
+                [/[^\\"]+/, 'string'],
+                [/\\./, 'string.escape'],
+                [/"/, { token: 'string.quote', bracket: '@close', next: '@pop' }]
+            ],
+
+            whitespace: [
+                [/[ \t\r\n]+/, ''],
+                [/\/\/.*$/, 'comment'],
+                [/\/\*/, { token: 'comment', next: '@comment' }]
+            ],
+
+            comment: [
+                [/[^/*]+/, 'comment'],
+                [/\*\//, { token: 'comment', next: '@pop' }],
+                [/./, 'comment']
+            ]
+        }
+    });
+
 
     const go = new Go(); // From wasm_exec.js
 
