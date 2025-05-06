@@ -176,7 +176,7 @@ void main() {
 
             document.getElementById("run-btn").onclick = () => {
                 const code = editor.getValue();
-                const output = window.run(code); // from main.go
+                const output = window.run(code);
                 if (typeof output === 'string') {
                     document.getElementById("output").textContent = output;
                 } else {
